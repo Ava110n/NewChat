@@ -34,12 +34,13 @@ class Connection {
         pw?.println(text)
     }
 
-    fun receive() {
+    fun receive():String? {
         stop = false
         br = socket?.getInputStream()?.bufferedReader()
-        while (!stop) {
-            br?.readLine()
-        }
+        //while (!stop) {
+        return br?.readLine()
+       // }
+
     }
 
     fun finish() {

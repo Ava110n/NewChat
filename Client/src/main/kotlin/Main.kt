@@ -13,15 +13,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import kotlin.concurrent.thread
 
 @Composable
 @Preview
-fun App() {
+fun App(client:Client) {
     var message by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
     var is_login by remember { mutableStateOf(false) }
     var login by remember { mutableStateOf("") }
     var messages by remember { mutableStateOf(mutableStateListOf<String>()) }
+
+    thread {
+        var newMessage = client.receive()
+        if (newMessage != null) {
+            messages.add(newMessage)
+        }
+    }
+
 
     Column {
         Row(modifier = Modifier.weight(9f)) {
@@ -43,7 +52,7 @@ fun App() {
             })
             Button(onClick = {
                 if (!is_login) {
-                    text = "Добро пожаловать в чат " + message
+                    text = message + " присоединился в чат"
                     login = message
                     message = ""
                     is_login = true
@@ -51,7 +60,7 @@ fun App() {
                     text += login + ":" + message
                     message = ""
                 }
-                messages.add(text)
+                client.send(text)
                 text = ""
             }) {
                 if (is_login) {
@@ -71,7 +80,9 @@ fun pass() {}
 
 
 fun main() = application {
+    var client: Client = Client()
+    client.start()
     Window(onCloseRequest = ::exitApplication) {
-        App()
+        App(client)
     }
 }
